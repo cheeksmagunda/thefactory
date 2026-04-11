@@ -28,6 +28,50 @@ import json
 import sys
 from datetime import datetime
 
+
+# ============================================================================
+# NAME → MLBAM ID RESOLVER
+# ============================================================================
+
+_NAME_LOOKUP_CACHE = None
+
+def _load_name_lookup():
+    """Load pybaseball player lookup table once and cache it."""
+    global _NAME_LOOKUP_CACHE
+    if _NAME_LOOKUP_CACHE is not None:
+        return _NAME_LOOKUP_CACHE
+    try:
+        from pybaseball import playerid_lookup
+        # Pull the full lookup table by doing an empty-ish fetch
+        import pybaseball.lahman as lahman  # noqa — triggers cache population
+        from pybaseball.playerid_lookup import get_lookup_table
+        _NAME_LOOKUP_CACHE = get_lookup_table()
+    except Exception:
+        _NAME_LOOKUP_CACHE = pd.DataFrame()
+    return _NAME_LOOKUP_CACHE
+
+
+def resolve_name_to_mlbam(full_name: str) -> int | None:
+    """
+    Convert 'First Last' or 'F. Last' player name to MLBAM ID.
+    Returns None if not found.
+    """
+    try:
+        from pybaseball import playerid_lookup
+        # Normalise abbreviated first names like 'M. Soroka' → last='Soroka'
+        parts = full_name.strip().split()
+        if len(parts) < 2:
+            return None
+        last = parts[-1]
+        first = parts[0].rstrip('.')
+        result = playerid_lookup(last, first, fuzzy=True)
+        if not result.empty:
+            mlbam = result.iloc[0]['key_mlbam']
+            return int(mlbam) if not pd.isna(mlbam) else None
+    except Exception:
+        pass
+    return None
+
 # ============================================================================
 # ODDS CONVERSION UTILITIES
 # ============================================================================
@@ -451,9 +495,12 @@ def analyze_slate(slate_df, batter_stats, pitcher_stats, name_map=None):
         pitcher_id = row.get('pitcher_id', None)
         odds = row.get('odds', 400)
         
-        # If we have IDs, use them; otherwise try name matching
-        # (In production, we'd have a proper name→ID resolver)
-        
+        # Resolve IDs from names if not provided
+        if not batter_id and batter_name != '?':
+            batter_id = resolve_name_to_mlbam(batter_name)
+        if not pitcher_id and pitcher_name != '?':
+            pitcher_id = resolve_name_to_mlbam(pitcher_name)
+
         # Compute scores
         power = compute_power_score(batter_id, batter_stats) if batter_id else 50
         vuln = compute_pitcher_vulnerability(pitcher_id, pitcher_stats) if pitcher_id else 50
