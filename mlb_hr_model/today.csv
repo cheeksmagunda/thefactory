@@ -2,3 +2,10 @@ batter_name,team,pitcher_name,opp_team,odds,temperature,wind_speed,wind_dir,stan
 Pete Crow-Armstrong,CHC,Braxton Ashcraft,PIT,820,61,19,R-L,L,R,CHC
 Shea Langeliers,ATH,Kodai Senga,NYM,370,57,10,out,R,R,NYM
 Aaron Judge,NYY,Nick Martinez,TB,310,72,0,dome,R,R,TB
+Yordan Alvarez,HOU,Luis Castillo,SEA,300,55,0,dome,L,R,SEA
+Corey Seager,TEX,Emmet Sheehan,LAD,390,68,8,out,L,R,LAD
+Rafael Devers,SFG,Chris Bassitt,BAL,410,62,12,out,L,R,BAL
+Kyle Schwarber,PHI,MacKenzie Gore,WAS,280,65,10,out,L,L,PHI
+Matt Olson,ATL,Framber Valdez,HOU,370,69,7,out,L,R,ATL
+Nick Kurtz,ATH,Kodai Senga,NYM,430,57,10,out,R,R,NYM
+Bryce Harper,PHI,MacKenzie Gore,WAS,340,65,10,out,L,L,PHI
