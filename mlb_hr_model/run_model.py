@@ -8,14 +8,16 @@ Make sure you have the dependencies installed:
     pip install pybaseball pandas numpy scikit-learn lightgbm
 
 Usage:
-    python run_model.py                    # Full pipeline (takes 30+ min for data pull)
-    python run_model.py --test             # Quick test with small date range
-    python run_model.py --from-cache       # Skip data pull, use cached parquet
+    python run_model.py                          # Full pipeline (2023-2024, 30+ min)
+    python run_model.py --test                   # Quick test with small date range
+    python run_model.py --from-cache             # Skip data pull, use cached parquet
+    python run_model.py --start 2025-03-20 --end 2025-09-30   # 2025 season
 """
 
 import argparse
 import os
 import sys
+from datetime import datetime, timedelta
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -24,9 +26,22 @@ from phase1_data_pipeline import run_phase1_pipeline, CONFIG
 from phase2_model_training import run_phase2_pipeline
 
 
+def compute_splits(start: str, end: str):
+    """
+    Auto-compute train/val/test split dates from a date range.
+    Uses a 60/20/20 temporal split.
+    """
+    s = datetime.strptime(start, '%Y-%m-%d')
+    e = datetime.strptime(end, '%Y-%m-%d')
+    total_days = (e - s).days
+    train_end = s + timedelta(days=int(total_days * 0.60))
+    val_end   = s + timedelta(days=int(total_days * 0.80))
+    return train_end.strftime('%Y-%m-%d'), val_end.strftime('%Y-%m-%d')
+
+
 def main():
     parser = argparse.ArgumentParser(description='MLB HR Prop Model')
-    parser.add_argument('--test', action='store_true', 
+    parser.add_argument('--test', action='store_true',
                         help='Run with small date range for testing')
     parser.add_argument('--from-cache', action='store_true',
                         help='Load data from cached parquet file')
@@ -35,12 +50,12 @@ def main():
     parser.add_argument('--end', type=str, default=None,
                         help='Override end date (YYYY-MM-DD)')
     args = parser.parse_args()
-    
+
     # Create directories
     os.makedirs('data', exist_ok=True)
     os.makedirs('models', exist_ok=True)
     os.makedirs('output', exist_ok=True)
-    
+
     # Determine date range
     if args.test:
         start = '2024-07-01'
@@ -48,14 +63,16 @@ def main():
         cache_path = 'data/statcast_test_jul2024.parquet'
         train_end = '2024-07-20'
         val_end = '2024-07-27'
-        print("\n🧪 TEST MODE — using July 2024 only\n")
+        print("\nTEST MODE — using July 2024 only\n")
     else:
         start = args.start or CONFIG['train_start']
         end = args.end or CONFIG['train_end']
         cache_path = f'data/statcast_{start}_{end}.parquet'
-        train_end = '2024-06-30'
-        val_end = '2024-09-30'
-        print(f"\n⚾ FULL MODE — {start} to {end}\n")
+        train_end, val_end = compute_splits(start, end)
+        print(f"\nFULL MODE — {start} to {end}")
+        print(f"  Train: {start} → {train_end}")
+        print(f"  Val:   {train_end} → {val_end}")
+        print(f"  Test:  {val_end} → {end}\n")
     
     if args.from_cache and not os.path.exists(cache_path):
         print(f"Cache file not found: {cache_path}")
