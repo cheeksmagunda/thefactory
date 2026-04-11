@@ -71,7 +71,7 @@ def load_player_database(parquet_path=None):
         candidates = [f for f in os.listdir(data_dir) if f.endswith('.parquet')] if os.path.exists(data_dir) else []
         if not candidates:
             print("No cached Statcast data found. Run the training pipeline first.")
-            return None, None
+            return None, None, {}
         parquet_path = os.path.join(data_dir, sorted(candidates)[-1])
     
     print(f"Loading player database from {parquet_path}...")
