@@ -1,0 +1,4 @@
+batter_name,team,pitcher_name,opp_team,odds,temperature,wind_speed,wind_dir,stand,p_throws,venue
+Pete Crow-Armstrong,CHC,Braxton Ashcraft,PIT,820,61,19,R-L,L,R,CHC
+Shea Langeliers,ATH,Kodai Senga,NYM,370,57,10,out,R,R,NYM
+Aaron Judge,NYY,Nick Martinez,TB,310,72,0,dome,R,R,TB
