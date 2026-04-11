@@ -116,7 +116,11 @@ def load_player_database(parquet_path=None):
         if not candidates:
             print("No cached Statcast data found. Run the training pipeline first.")
             return None, None, {}
-        parquet_path = os.path.join(data_dir, sorted(candidates)[-1])
+        # Pick most recently modified parquet (not alphabetical, which breaks on mixed names)
+        parquet_path = max(
+            (os.path.join(data_dir, f) for f in candidates),
+            key=os.path.getmtime
+        )
     
     print(f"Loading player database from {parquet_path}...")
     df = pd.read_parquet(parquet_path)
