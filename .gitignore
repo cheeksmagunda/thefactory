@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Data artifacts (daily ingest, caches)
+data/ballparkpal/*.xlsx
+data/ballparkpal/*.xls
+data/ballparkpal/*.csv
+data/cache/*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Railway/Nixpacks
+.railway/
